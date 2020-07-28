@@ -1,6 +1,10 @@
 def make_matrix(counter):
     size = input(f'Enter the size of {counter} matrix:')
-    x, y = [int(i) for i in size.split()]
+    values = [int(i) for i in size.split()]
+    if len(values) == 2:
+        x, y = values
+    else:
+        x, y = values[0], values[0]
     new_matrix = [[0.0] * y for _ in range(x)]
     print(f'Enter {counter} matrix:')
     for i in range(x):
@@ -26,20 +30,24 @@ def sum_matrix():
     return new_matrix
 
 
-def mul_matrix_by_constant():
-    matrix_one = make_matrix('first')
-    multi = float(input('Enter constant: '))
+def mul_matrix_by_constant(matrix=None, multi=None):
+    if not matrix:
+        matrix = make_matrix('first')
+    if not multi:
+        multi = float(input('Enter constant: '))
 
-    new_matrix = [[0] * len(matrix_one[0]) for _ in range(len(matrix_one))]
-    for i, inner in enumerate(matrix_one):
+    new_matrix = [[0] * len(matrix[0]) for _ in range(len(matrix))]
+    for i, inner in enumerate(matrix):
         for j, val in enumerate(inner):
             new_matrix[i][j] = val * multi
     return new_matrix
 
 
-def mul_matrix_by_matrix():
-    matrix_one = make_matrix('first')
-    matrix_two = make_matrix('second')
+def mul_matrix_by_matrix(matrix_one=None, matrix_two=None):
+    if not matrix_one:
+        matrix_one = make_matrix('first')
+    if not matrix_two:
+        matrix_two = make_matrix('second')
 
     if len(matrix_one[0]) != len(matrix_two):
         return None
@@ -117,7 +125,7 @@ def transpose_matrix():
 
     return new_matrix
 
-
+h
 def remove_lines_from_matrix(matrix, row, column):
     size = len(matrix) - 1
     new_matrix = [matrix[:-1] for _ in range(size)]
@@ -140,14 +148,20 @@ def remove_lines_from_matrix(matrix, row, column):
     return new_matrix
 
 
+def cofactor(matrix, x, y):
+    return pow(-1, x + 2 + y) * det_matrix(remove_lines_from_matrix(matrix, x, y))
+
+
 def det_matrix(matrix):
+    if len(matrix) == 1:
+        return matrix[0][0]
     if len(matrix) == 2:
         return matrix[0][0] * matrix[1][1] - matrix[1][0] * matrix[0][1]
 
     values = []
 
     for i, val in enumerate(matrix[0]):
-        values.append(val * pow(-1, 2 + i) * det_matrix(remove_lines_from_matrix(matrix, 0, i)))
+        values.append(val * cofactor(matrix, 0, i))
 
     return sum(values)
 
@@ -160,20 +174,45 @@ def determinant_matrix():
     return det
 
 
+def inverse_matrix():
+    # https://www.youtube.com/watch?v=xfhzwNkMNg4
+    matrix_one = make_matrix('first')
+    matrix_two = [x[:] for x in matrix_one]
+
+    det = det_matrix(matrix_one)
+
+    if det == 0:
+        return "This matrix doesn't have an inverse."
+
+    for i, inner in enumerate(matrix_one):
+        for j, val in enumerate(inner):
+            matrix_two[i][j] = cofactor(matrix_one, i, j)
+
+    matrix_two = transpose_main_diagonal(matrix_two)
+
+    inverse = mul_matrix_by_constant(matrix_two, 1 / det)
+
+    return inverse
+
+
 def print_matrix(matrix):
     if not matrix:
         print('ERROR')
         return
-    if isinstance(m, float):
+    if isinstance(matrix, float) or isinstance(matrix, str):
+        print(matrix)
+        return
+        return
+    if isinstance(matrix, float) or isinstance(matrix, str):
         print(matrix)
         return
     for inner in matrix:
         line = ''
         for i, val in enumerate(inner):
             if i == len(inner) - 1:
-                line += f'{val:.2f}'
+                line += f'{val:.3f}'
             else:
-                line += f'{val:.2f} '
+                line += f'{val:.3f} '
         print(line)
 
 
@@ -193,7 +232,8 @@ if __name__ == '__main__':
         '2. Multiply matrix by a constant\n',
         '3. Multiply matrices\n',
         '4. Transpose matrix\n',
-        '5. Calculate a determinant\n'
+        '5. Calculate a determinant\n',
+        '6. Inverse matrix\n',
         '0. Exit'
     ]
     while True:
@@ -209,6 +249,8 @@ if __name__ == '__main__':
             m = transpose_matrix()
         elif option == 5:
             m = determinant_matrix()
+        elif option == 6:
+            m = inverse_matrix()
         else:
             break
 
